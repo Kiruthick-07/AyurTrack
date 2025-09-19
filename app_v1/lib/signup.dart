@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'services/web_authentication_service.dart';
 
 class SignupPage extends StatefulWidget {
   @override
@@ -223,10 +224,62 @@ class _SignupPageState extends State<SignupPage> {
                         ),
                         SizedBox(height: 24),
                         ElevatedButton(
-                          onPressed: () {
-                            // TODO: Add actual signup logic here
-                            // Navigate back to login page after successful signup
-                            Navigator.pop(context);
+                          onPressed: () async {
+                            try {
+                              final name = userNameController.text.trim();
+                              final email = emailController.text.trim();
+                              final password = passwordController.text;
+                              final confirmPassword =
+                                  confirmPasswordController.text;
+
+                              if (name.isEmpty ||
+                                  email.isEmpty ||
+                                  password.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Please fill in all fields'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+
+                              if (password != confirmPassword) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Passwords do not match'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+
+                              await WebAuthenticationService.instance
+                                  .createUser(
+                                    name: name,
+                                    email: email,
+                                    password: password,
+                                    role: selectedRole.toLowerCase(),
+                                  );
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Account created successfully!',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+
+                              Navigator.pop(context); // Go back to login screen
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('An error occurred: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green[800],

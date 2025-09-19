@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'signup.dart';
 import 'collectordash.dart';
+import 'services/web_authentication_service.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -123,17 +124,50 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         SizedBox(height: 18),
                         ElevatedButton(
-                          onPressed: () {
-                            // TODO: Add actual login validation
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => CollectorDashboard(
-                                  collectorId: 'COL001',
-                                  collectorName: 'John Doe',
+                          onPressed: () async {
+                            try {
+                              final email = emailController.text.trim();
+                              final password = passwordController.text;
+
+                              if (email.isEmpty || password.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Please fill in all fields'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+
+                              final user = await WebAuthenticationService
+                                  .instance
+                                  .authenticateUser(email, password);
+                              if (user != null) {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CollectorDashboard(
+                                      collectorId: user.id.toString(),
+                                      collectorName: user.name,
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Invalid email or password'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('An error occurred: $e'),
+                                  backgroundColor: Colors.red,
                                 ),
-                              ),
-                            );
+                              );
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green[800],
