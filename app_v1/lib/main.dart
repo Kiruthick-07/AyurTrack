@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'signup.dart';
 import 'login.dart';
+import 'services/local_storage_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize local storage
+  await LocalStorageService.instance.init();
+  
   runApp(AayurGramApp());
 }
 
